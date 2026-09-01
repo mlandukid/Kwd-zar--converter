@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="KWD→ZAR">
 <meta name="theme-color" content="#1E4E4A">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
 <title>KWD → ZAR</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -761,6 +762,11 @@
   setInterval(tryLiveRefresh, 20 * 60 * 1000);
 
   kwdInput.addEventListener("input", recalc);
+  kwdInput.addEventListener("focus", function () {
+    // So checking a new price overwrites the remembered one immediately,
+    // instead of them having to manually clear it first.
+    kwdInput.select();
+  });
   rateInput.addEventListener("input", recalc);
   rateInput.addEventListener("change", function () {
     var r = parseFloat(rateInput.value);
@@ -789,6 +795,16 @@
     recalc();
     tryLiveRefresh();
   });
+
+  // Registers the offline app-shell cache. Safe no-op on browsers without
+  // service worker support; failures here never block the app itself.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function (err) {
+        console.warn("service worker registration failed:", err);
+      });
+    });
+  }
 </script>
 
 </body>
