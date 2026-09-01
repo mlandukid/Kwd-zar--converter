@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KWD→ZAR">
+<meta name="theme-color" content="#1E4E4A">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>KWD → ZAR</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -199,8 +204,9 @@
     font-weight: 600;
     cursor: pointer;
     padding: 4px 0;
+    transition: transform 0.08s ease;
   }
-  .swap-btn:active { opacity: 0.6; }
+  .swap-btn:active { opacity: 0.6; transform: scale(0.94); }
 
   .input-row {
     display: flex;
@@ -252,8 +258,12 @@
     padding: 7px 12px;
     border-radius: 999px;
     cursor: pointer;
+    transition: transform 0.08s ease, background 0.08s ease;
   }
-  .quick-taps button:active { background: var(--sand-deep); }
+  .quick-taps button:active {
+    background: var(--sand-deep);
+    transform: scale(0.92);
+  }
 
   .result {
     text-align: left;
@@ -447,6 +457,15 @@
 
   var lastTier = null;
 
+  // Real haptic buzz on Android Chrome; silently does nothing on iPhone
+  // Safari, since Apple doesn't implement the Vibration API there — the
+  // button press animations above are the actual felt feedback on iOS.
+  function tap() {
+    try {
+      if (navigator.vibrate) navigator.vibrate(12);
+    } catch (e) {}
+  }
+
   function setEgg(tierKey) {
     var group = tiers[tierKey];
     var pair = group.lines[Math.floor(Math.random() * group.lines.length)];
@@ -587,20 +606,48 @@
   }
 
   swapBtn.addEventListener("click", function () {
+    tap();
     direction = direction === "kwd2zar" ? "zar2kwd" : "kwd2zar";
     applyDirectionLabels();
     renderQuickTaps();
-    kwdInput.value = "";
+    kwdInput.value = loadAmount();
     recalc();
   });
 
   quickTaps.addEventListener("click", function (e) {
     var btn = e.target.closest("button");
     if (!btn) return;
+    tap();
     kwdInput.value = btn.getAttribute("data-val");
+    saveAmount();
     recalc();
     kwdInput.focus();
   });
+
+  // Remembers the last amount typed so re-opening the app (e.g. from the
+  // home screen mid-shop) shows the last price checked instead of a blank
+  // field. Keyed by direction so KWD-in and ZAR-in amounts don't overwrite
+  // each other.
+  var AMOUNT_KEY = "converter-last-amount";
+
+  function saveAmount() {
+    try {
+      var all = JSON.parse(localStorage.getItem(AMOUNT_KEY) || "{}");
+      all[direction] = kwdInput.value;
+      localStorage.setItem(AMOUNT_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  function loadAmount() {
+    try {
+      var all = JSON.parse(localStorage.getItem(AMOUNT_KEY) || "{}");
+      return all[direction] || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  kwdInput.addEventListener("input", saveAmount);
 
   function rateKeyFor(code) {
     return "rate-" + code.toLowerCase() + "-zar";
@@ -705,6 +752,7 @@
   }
 
   currencySelect.addEventListener("change", function () {
+    tap();
     loadCurrency(currencySelect.value);
   });
 
@@ -721,10 +769,14 @@
       updatedAtEl.textContent = "using your rate";
     }
   });
-  refreshBtn.addEventListener("click", tryLiveRefresh);
+  refreshBtn.addEventListener("click", function () {
+    tap();
+    tryLiveRefresh();
+  });
 
   renderQuickTaps();
   applyDirectionLabels();
+  kwdInput.value = loadAmount();
 
   loadSavedRate(selectedCode).then(function (saved) {
     if (saved && saved.rate) {
