@@ -116,6 +116,23 @@
     -moz-appearance: textfield;
   }
 
+  .rate-strip #currencySelect {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    color: var(--sand);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 1px 4px;
+    max-width: 88px;
+  }
+
+  .rate-strip #currencySelect option {
+    color: var(--ink);
+    background: var(--card);
+  }
+
   .rate-strip .updated {
     display: block;
     font-size: 10.5px;
@@ -317,7 +334,9 @@
     <div class="rate-text">
       Rate
       <span class="rate-figure">
-        1 KWD =
+        1
+        <select id="currencySelect" aria-label="Currency to convert"></select>
+        =
         <input id="rateInput" type="number" inputmode="decimal" step="0.01" value="52.12" aria-label="Exchange rate">
         ZAR
       </span>
@@ -446,6 +465,9 @@
   function reactTo(zar) {
     if (!zar || zar <= 0) {
       setEgg("idle");
+      eggSub.textContent = direction === "kwd2zar"
+        ? "1 " + selectedCode + " is worth more than you'd think."
+        : "Rand doesn't stretch as far as you'd think.";
     } else if (zar < 150) {
       setEgg("fine");
     } else if (zar < 500) {
@@ -472,15 +494,48 @@
   var resultLabel = document.getElementById("resultLabel");
   var quickTaps = document.getElementById("quickTaps");
   var swapBtn = document.getElementById("swapBtn");
+  var currencySelect = document.getElementById("currencySelect");
+  var checkNowLink = document.getElementById("checkNowLink");
+
+  // Each currency carries its own quick-tap amounts, since "50" means very
+  // different things in KWD vs AED. defaultRate is just a placeholder shown
+  // for an instant before the live fetch lands — it's overwritten immediately.
+  var currencies = {
+    KWD: { name: "Kuwaiti dinar",  flag: "🇰🇼", defaultRate: 52.10, taps: ["1", "5", "10", "25", "50", "100"] },
+    USD: { name: "US dollar",      flag: "🇺🇸", defaultRate: 18.10, taps: ["1", "5", "10", "20", "50", "100"] },
+    AED: { name: "UAE dirham",     flag: "🇦🇪", defaultRate: 4.93,  taps: ["10", "50", "100", "200", "500", "1000"] },
+    SAR: { name: "Saudi riyal",    flag: "🇸🇦", defaultRate: 4.83,  taps: ["10", "50", "100", "200", "500", "1000"] },
+    QAR: { name: "Qatari riyal",   flag: "🇶🇦", defaultRate: 4.97,  taps: ["10", "50", "100", "200", "500", "1000"] },
+    EUR: { name: "Euro",           flag: "🇪🇺", defaultRate: 21.00, taps: ["1", "5", "10", "20", "50", "100"] },
+    GBP: { name: "British pound",  flag: "🇬🇧", defaultRate: 24.30, taps: ["1", "5", "10", "20", "50", "100"] }
+  };
+  var zarTaps = ["50", "100", "250", "500", "1000", "2000"];
+
+  var LAST_CODE_KEY = "converter-last-currency";
+  var selectedCode = (function () {
+    try {
+      var saved = localStorage.getItem(LAST_CODE_KEY);
+      return (saved && currencies[saved]) ? saved : "KWD";
+    } catch (e) {
+      return "KWD";
+    }
+  })();
+
+  (function populateCurrencySelect() {
+    var codes = Object.keys(currencies);
+    for (var i = 0; i < codes.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = codes[i];
+      opt.textContent = codes[i] + " — " + currencies[codes[i]].name;
+      currencySelect.appendChild(opt);
+    }
+    currencySelect.value = selectedCode;
+  })();
 
   var direction = "kwd2zar";
-  var quickValues = {
-    kwd2zar: ["1", "5", "10", "25", "50", "100"],
-    zar2kwd: ["50", "100", "250", "500", "1000", "2000"]
-  };
 
   function renderQuickTaps() {
-    var vals = quickValues[direction];
+    var vals = direction === "kwd2zar" ? currencies[selectedCode].taps : zarTaps;
     quickTaps.innerHTML = "";
     for (var i = 0; i < vals.length; i++) {
       var btn = document.createElement("button");
@@ -491,14 +546,16 @@
   }
 
   function applyDirectionLabels() {
+    var cur = currencies[selectedCode];
+    checkNowLink.href = "https://www.google.com/search?q=" + selectedCode + "+to+ZAR";
     if (direction === "kwd2zar") {
-      routeEl.textContent = "KWD → ZAR";
-      inputLabel.textContent = "Price in Kuwaiti dinar";
-      inputFlag.textContent = "🇰🇼";
-      inputCode.textContent = "KWD";
+      routeEl.textContent = selectedCode + " → ZAR";
+      inputLabel.textContent = "Price in " + cur.name;
+      inputFlag.textContent = cur.flag;
+      inputCode.textContent = selectedCode;
       resultLabel.textContent = "That's roughly";
     } else {
-      routeEl.textContent = "ZAR → KWD";
+      routeEl.textContent = "ZAR → " + selectedCode;
       inputLabel.textContent = "Amount in rand";
       inputFlag.textContent = "🇿🇦";
       inputCode.textContent = "ZAR";
@@ -510,7 +567,7 @@
     var amount = parseFloat(kwdInput.value);
     var rate = parseFloat(rateInput.value);
     if (!rate || isNaN(amount) || amount <= 0) {
-      zarAmountEl.textContent = direction === "kwd2zar" ? "R0.00" : "0.000 KWD";
+      zarAmountEl.textContent = direction === "kwd2zar" ? "R0.00" : "0.000 " + selectedCode;
       reactTo(0);
       return;
     }
@@ -520,7 +577,7 @@
       reactTo(zar);
     } else {
       var kwd = amount / rate;
-      zarAmountEl.textContent = kwd.toLocaleString("en-ZA", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + " KWD";
+      zarAmountEl.textContent = kwd.toLocaleString("en-ZA", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + " " + selectedCode;
       reactTo(amount);
     }
   }
@@ -541,43 +598,61 @@
     kwdInput.focus();
   });
 
-  var RATE_KEY = "kwd-zar-rate";
+  function rateKeyFor(code) {
+    return "rate-" + code.toLowerCase() + "-zar";
+  }
 
-  function saveRate(rate) {
+  function saveRate(code, rate) {
     try {
-      localStorage.setItem(RATE_KEY, JSON.stringify({ rate: rate, ts: Date.now() }));
+      localStorage.setItem(rateKeyFor(code), JSON.stringify({ rate: rate, ts: Date.now() }));
     } catch (e) {}
   }
 
-  function loadSavedRate() {
+  function loadSavedRate(code) {
     try {
-      var raw = localStorage.getItem(RATE_KEY);
+      var raw = localStorage.getItem(rateKeyFor(code));
       return Promise.resolve(raw ? JSON.parse(raw) : null);
     } catch (e) {
       return Promise.resolve(null);
     }
   }
 
-  function applyLiveRate(zarRate) {
+  function applyLiveRate(zarRate, label) {
     rateInput.value = zarRate.toFixed(2);
     var now = new Date();
-    updatedAtEl.textContent = "live, updated " + now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
-    saveRate(zarRate);
+    updatedAtEl.textContent = (label || "live") + ", updated " + now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+    saveRate(selectedCode, zarRate);
     recalc();
   }
 
   function tryLiveRefresh() {
     refreshBtn.classList.add("spinning");
+    var code = selectedCode.toLowerCase();
 
-    var sourceA = fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/kwd.json")
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data && data.kwd && data.kwd.zar) return data.kwd.zar;
-        throw new Error("no zar in source A");
-      });
+    // Hourly-updated primary source (free-tier key). Checked first since it
+    // moves more often than the two daily fallbacks below.
+    var sourceHourly = function () {
+      return fetch("https://v6.exchangerate-api.com/v6/2a4e70f7b087d876ef285871/latest/" + selectedCode)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.result === "success" && data.conversion_rates && data.conversion_rates.ZAR) {
+            return data.conversion_rates.ZAR;
+          }
+          throw new Error("no zar in hourly source");
+        });
+    };
+
+    var sourceA = function () {
+      return fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/" + code + ".json")
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data[code] && data[code].zar) return data[code].zar;
+          throw new Error("no zar in source A");
+        });
+    };
 
     var sourceB = function () {
-      return fetch("https://open.er-api.com/v6/latest/KWD")
+      return fetch("https://open.er-api.com/v6/latest/" + selectedCode)
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data && data.rates && data.rates.ZAR) return data.rates.ZAR;
@@ -585,12 +660,19 @@
         });
     };
 
-    sourceA
-      .then(applyLiveRate)
-      .catch(function () {
-        return sourceB().then(applyLiveRate);
+    sourceHourly()
+      .then(function (rate) { applyLiveRate(rate, "live (hourly)"); })
+      .catch(function (err) {
+        console.warn("hourly source failed:", err);
+        return sourceA()
+          .then(function (rate) { applyLiveRate(rate, "live (daily)"); })
+          .catch(function (err) {
+            console.warn("source A failed:", err);
+            return sourceB().then(function (rate) { applyLiveRate(rate, "live (daily)"); });
+          });
       })
-      .catch(function () {
+      .catch(function (err) {
+        console.warn("all sources failed:", err);
         updatedAtEl.textContent = "couldn't reach live rate, edit above or tap check";
       })
       .then(function () {
@@ -598,12 +680,40 @@
       });
   }
 
+  function loadCurrency(code) {
+    selectedCode = code;
+    try { localStorage.setItem(LAST_CODE_KEY, code); } catch (e) {}
+    applyDirectionLabels();
+    renderQuickTaps();
+    rateInput.value = currencies[code].defaultRate.toFixed(2);
+    kwdInput.value = "";
+    loadSavedRate(code).then(function (saved) {
+      if (saved && saved.rate) {
+        rateInput.value = saved.rate.toFixed(2);
+        var mins = Math.round((Date.now() - saved.ts) / 60000);
+        updatedAtEl.textContent = mins < 60
+          ? "last set " + mins + " min ago"
+          : "last set a while back, refreshing…";
+      }
+      recalc();
+      tryLiveRefresh();
+    });
+  }
+
+  currencySelect.addEventListener("change", function () {
+    loadCurrency(currencySelect.value);
+  });
+
+  // The hourly source updates once an hour — checking every 20 min catches
+  // that update reasonably soon without hammering the free-tier quota.
+  setInterval(tryLiveRefresh, 20 * 60 * 1000);
+
   kwdInput.addEventListener("input", recalc);
   rateInput.addEventListener("input", recalc);
   rateInput.addEventListener("change", function () {
     var r = parseFloat(rateInput.value);
     if (r) {
-      saveRate(r);
+      saveRate(selectedCode, r);
       updatedAtEl.textContent = "using your rate";
     }
   });
@@ -612,7 +722,7 @@
   renderQuickTaps();
   applyDirectionLabels();
 
-  loadSavedRate().then(function (saved) {
+  loadSavedRate(selectedCode).then(function (saved) {
     if (saved && saved.rate) {
       rateInput.value = saved.rate.toFixed(2);
       var mins = Math.round((Date.now() - saved.ts) / 60000);
