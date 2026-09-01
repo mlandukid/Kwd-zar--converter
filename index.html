@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>KWD → ZAR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --sand: #EFE7D6;
+    --sand-deep: #E3D8BE;
+    --teal: #1E4E4A;
+    --teal-deep: #123634;
+    --gold: #C9A24B;
+    --ink: #221F1A;
+    --ink-soft: #5B564B;
+    --alert: #B8422F;
+    --card: #FBF8F1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 28px 16px 40px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .eyebrow-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .route {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--teal);
+    letter-spacing: 0.02em;
+  }
+
+  .for-steph {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-size: clamp(30px, 8vw, 38px);
+    line-height: 1.05;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+
+  .sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
+    max-width: 30ch;
+  }
+
+  .rate-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--teal);
+    color: var(--sand);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+
+  .rate-strip .rate-text {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .rate-strip .rate-figure {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    display: block;
+  }
+
+  .rate-strip #rateInput {
+    width: 58px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    color: var(--sand);
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 1px 4px;
+    -moz-appearance: textfield;
+  }
+
+  .rate-strip .updated {
+    display: block;
+    font-size: 10.5px;
+    color: #B9CFCB;
+    margin-top: 2px;
+  }
+
+  .rate-strip .updated a {
+    color: var(--gold);
+    text-decoration: underline;
+  }
+
+  .refresh-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--sand);
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.5s ease, background 0.2s ease;
+  }
+  .refresh-btn:active { background: rgba(255,255,255,0.22); }
+  .refresh-btn.spinning { animation: spin 0.7s linear; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 22px 20px 20px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03), 0 8px 24px rgba(34,31,26,0.06);
+    border: 1px solid rgba(34,31,26,0.06);
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .label-row label { margin-bottom: 0; }
+
+  .swap-btn {
+    border: none;
+    background: transparent;
+    color: var(--teal);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .swap-btn:active { opacity: 0.6; }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid var(--sand-deep);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .input-row .flag {
+    font-size: 22px;
+    margin-right: 10px;
+  }
+
+  .input-row input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--ink);
+    width: 100%;
+    min-width: 0;
+  }
+
+  .input-row .code {
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .quick-taps {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .quick-taps button {
+    border: 1px solid var(--sand-deep);
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .quick-taps button:active { background: var(--sand-deep); }
+
+  .result {
+    text-align: left;
+    padding-top: 4px;
+  }
+
+  .result .label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .result .amount {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(38px, 12vw, 48px);
+    line-height: 1;
+    color: var(--teal-deep);
+    word-break: break-word;
+  }
+
+  .egg {
+    margin-top: 16px;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.3;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .egg.pulse {
+    animation: eggPulse 0.28s ease;
+  }
+
+  @keyframes eggPulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.025); }
+    100% { transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .egg.pulse { animation: none; }
+    .refresh-btn.spinning { animation: none; }
+  }
+
+  .egg .egg-sub {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12.5px;
+    margin-top: 4px;
+    opacity: 0.85;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 18px;
+    line-height: 1.5;
+  }
+
+  .footer-note a { color: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="eyebrow-row">
+    <span class="route">KWD → ZAR</span>
+  </div>
+
+  <h1>Kuwait Teacher's Conversion Rate</h1>
+  <p class="sub">Type the Kuwaiti dinar price. It'll do the maths and tell you how to feel about it.</p>
+
+  <div class="rate-strip">
+    <div class="rate-text">
+      Rate
+      <span class="rate-figure">
+        1 KWD =
+        <input id="rateInput" type="number" inputmode="decimal" step="0.01" value="52.12" aria-label="Exchange rate">
+        ZAR
+      </span>
+      <span class="updated">
+        <span id="updatedAt">using today's rate</span>
+        · <a id="checkNowLink" href="https://www.google.com/search?q=KWD+to+ZAR" target="_blank" rel="noopener">check now</a>
+      </span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" aria-label="Try to refresh rate">↻</button>
+  </div>
+
+  <div class="card">
+    <div class="label-row">
+      <label for="kwdInput" id="inputLabel">Price in Kuwaiti dinar</label>
+      <button class="swap-btn" id="swapBtn" aria-label="Swap direction">⇅ swap</button>
+    </div>
+    <div class="input-row">
+      <span class="flag" id="inputFlag">🇰🇼</span>
+      <input id="kwdInput" type="number" inputmode="decimal" placeholder="0.00" min="0" step="0.001">
+      <span class="code" id="inputCode">KWD</span>
+    </div>
+
+    <div class="quick-taps" id="quickTaps">
+      <button data-val="1">1</button>
+      <button data-val="5">5</button>
+      <button data-val="10">10</button>
+      <button data-val="25">25</button>
+      <button data-val="50">50</button>
+      <button data-val="100">100</button>
+    </div>
+
+    <div class="result">
+      <span class="label" id="resultLabel">That's roughly</span>
+      <span class="amount" id="zarAmount">R0</span>
+    </div>
+
+    <div class="egg" id="eggBox">
+      <span id="eggMain">Pop in a number and see.</span>
+      <span class="egg-sub" id="eggSub">1 KWD is worth a lot more than it looks.</span>
+    </div>
+  </div>
+
+  <p class="footer-note">Rate updates when it can reach the market — check the link above if it looks off.</p>
+  <p class="footer-note" style="margin-top:6px;">Made by Loyiso Mlandu</p>
+</div>
+
+<script>
+  var kwdInput = document.getElementById("kwdInput");
+  var rateInput = document.getElementById("rateInput");
+  var zarAmountEl = document.getElementById("zarAmount");
+  var updatedAtEl = document.getElementById("updatedAt");
+  var refreshBtn = document.getElementById("refreshBtn");
+  var eggBox = document.getElementById("eggBox");
+  var eggMain = document.getElementById("eggMain");
+  var eggSub = document.getElementById("eggSub");
+
+  var palette = {
+    idle:     { bg: "#EFE7D6", fg: "#221F1A" },
+    fine:     { bg: "#E4EEE7", fg: "#1E4E4A" },
+    notice:   { bg: "#F3E7C9", fg: "#7A5B12" },
+    eish:     { bg: "#F4DCC7", fg: "#9C4A1E" },
+    hectic:   { bg: "#F3D3CB", fg: "#B8422F" },
+    walkaway: { bg: "#2A1A17", fg: "#F4CFC2" }
+  };
+
+  var tiers = {
+    idle: {
+      lines: [["Pop in a number and see.", "1 KWD is worth a lot more than it looks."]]
+    },
+    fine: {
+      lines: [
+        ["Sharp, that's nothing.", "Buy it, don't even think twice."],
+        ["Easy.", "Barely worth converting in your head."]
+      ]
+    },
+    notice: {
+      lines: [
+        ["Okay, that's fine.", "Normal person money. Go ahead."],
+        ["Not bad.", "Nothing to write home about."]
+      ]
+    },
+    eish: {
+      lines: [
+        ["Eish.", "That's starting to add up hey."],
+        ["Eish man.", "You're going to think about this one."]
+      ]
+    },
+    hectic1: {
+      lines: [
+        ["Neeh fok man.", "Sleep on it. Maybe."],
+        ["Neeh man.", "That's a whole conversation with yourself."]
+      ]
+    },
+    hectic2: {
+      lines: [
+        ["HECTIC.", "That's rent. That's actual rent."],
+        ["HECTIC.", "Say it out loud, see how it sounds."]
+      ]
+    },
+    walkaway: {
+      lines: [
+        ["I'll just come back okay.", "Walk away. Slowly. No sudden movements."],
+        ["Nah, we're leaving.", "Pretend you didn't see the price."]
+      ]
+    }
+  };
+
+  var lastTier = null;
+
+  function setEgg(tierKey) {
+    var group = tiers[tierKey];
+    var pair = group.lines[Math.floor(Math.random() * group.lines.length)];
+    var p = palette[tierKey === "hectic1" || tierKey === "hectic2" ? "hectic" : tierKey];
+    eggBox.style.background = p.bg;
+    eggBox.style.color = p.fg;
+    eggMain.textContent = pair[0];
+    eggSub.textContent = pair[1];
+    if (lastTier !== tierKey) {
+      eggBox.classList.remove("pulse");
+      void eggBox.offsetWidth;
+      eggBox.classList.add("pulse");
+    }
+    lastTier = tierKey;
+  }
+
+  function reactTo(zar) {
+    if (!zar || zar <= 0) {
+      setEgg("idle");
+    } else if (zar < 150) {
+      setEgg("fine");
+    } else if (zar < 500) {
+      setEgg("notice");
+    } else if (zar < 2200) {
+      setEgg("eish");
+    } else if (zar < 4500) {
+      setEgg("hectic1");
+    } else if (zar < 10000) {
+      setEgg("hectic2");
+    } else {
+      setEgg("walkaway");
+    }
+  }
+
+  function formatMoney(n, symbol) {
+    return symbol + n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  var routeEl = document.querySelector(".route");
+  var inputLabel = document.getElementById("inputLabel");
+  var inputFlag = document.getElementById("inputFlag");
+  var inputCode = document.getElementById("inputCode");
+  var resultLabel = document.getElementById("resultLabel");
+  var quickTaps = document.getElementById("quickTaps");
+  var swapBtn = document.getElementById("swapBtn");
+
+  var direction = "kwd2zar";
+  var quickValues = {
+    kwd2zar: ["1", "5", "10", "25", "50", "100"],
+    zar2kwd: ["50", "100", "250", "500", "1000", "2000"]
+  };
+
+  function renderQuickTaps() {
+    var vals = quickValues[direction];
+    quickTaps.innerHTML = "";
+    for (var i = 0; i < vals.length; i++) {
+      var btn = document.createElement("button");
+      btn.textContent = vals[i];
+      btn.setAttribute("data-val", vals[i]);
+      quickTaps.appendChild(btn);
+    }
+  }
+
+  function applyDirectionLabels() {
+    if (direction === "kwd2zar") {
+      routeEl.textContent = "KWD → ZAR";
+      inputLabel.textContent = "Price in Kuwaiti dinar";
+      inputFlag.textContent = "🇰🇼";
+      inputCode.textContent = "KWD";
+      resultLabel.textContent = "That's roughly";
+    } else {
+      routeEl.textContent = "ZAR → KWD";
+      inputLabel.textContent = "Amount in rand";
+      inputFlag.textContent = "🇿🇦";
+      inputCode.textContent = "ZAR";
+      resultLabel.textContent = "That's roughly";
+    }
+  }
+
+  function recalc() {
+    var amount = parseFloat(kwdInput.value);
+    var rate = parseFloat(rateInput.value);
+    if (!rate || isNaN(amount) || amount <= 0) {
+      zarAmountEl.textContent = direction === "kwd2zar" ? "R0.00" : "0.000 KWD";
+      reactTo(0);
+      return;
+    }
+    if (direction === "kwd2zar") {
+      var zar = amount * rate;
+      zarAmountEl.textContent = formatMoney(zar, "R");
+      reactTo(zar);
+    } else {
+      var kwd = amount / rate;
+      zarAmountEl.textContent = kwd.toLocaleString("en-ZA", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + " KWD";
+      reactTo(amount);
+    }
+  }
+
+  swapBtn.addEventListener("click", function () {
+    direction = direction === "kwd2zar" ? "zar2kwd" : "kwd2zar";
+    applyDirectionLabels();
+    renderQuickTaps();
+    kwdInput.value = "";
+    recalc();
+  });
+
+  quickTaps.addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn) return;
+    kwdInput.value = btn.getAttribute("data-val");
+    recalc();
+    kwdInput.focus();
+  });
+
+  var RATE_KEY = "kwd-zar-rate";
+
+  function saveRate(rate) {
+    try {
+      localStorage.setItem(RATE_KEY, JSON.stringify({ rate: rate, ts: Date.now() }));
+    } catch (e) {}
+  }
+
+  function loadSavedRate() {
+    try {
+      var raw = localStorage.getItem(RATE_KEY);
+      return Promise.resolve(raw ? JSON.parse(raw) : null);
+    } catch (e) {
+      return Promise.resolve(null);
+    }
+  }
+
+  function applyLiveRate(zarRate) {
+    rateInput.value = zarRate.toFixed(2);
+    var now = new Date();
+    updatedAtEl.textContent = "live, updated " + now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+    saveRate(zarRate);
+    recalc();
+  }
+
+  function tryLiveRefresh() {
+    refreshBtn.classList.add("spinning");
+
+    var sourceA = fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/kwd.json")
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.kwd && data.kwd.zar) return data.kwd.zar;
+        throw new Error("no zar in source A");
+      });
+
+    var sourceB = function () {
+      return fetch("https://open.er-api.com/v6/latest/KWD")
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.rates && data.rates.ZAR) return data.rates.ZAR;
+          throw new Error("no zar in source B");
+        });
+    };
+
+    sourceA
+      .then(applyLiveRate)
+      .catch(function () {
+        return sourceB().then(applyLiveRate);
+      })
+      .catch(function () {
+        updatedAtEl.textContent = "couldn't reach live rate, edit above or tap check";
+      })
+      .then(function () {
+        setTimeout(function () { refreshBtn.classList.remove("spinning"); }, 700);
+      });
+  }
+
+  kwdInput.addEventListener("input", recalc);
+  rateInput.addEventListener("input", recalc);
+  rateInput.addEventListener("change", function () {
+    var r = parseFloat(rateInput.value);
+    if (r) {
+      saveRate(r);
+      updatedAtEl.textContent = "using your rate";
+    }
+  });
+  refreshBtn.addEventListener("click", tryLiveRefresh);
+
+  renderQuickTaps();
+  applyDirectionLabels();
+
+  loadSavedRate().then(function (saved) {
+    if (saved && saved.rate) {
+      rateInput.value = saved.rate.toFixed(2);
+      var mins = Math.round((Date.now() - saved.ts) / 60000);
+      updatedAtEl.textContent = mins < 60
+        ? "last set " + mins + " min ago"
+        : "last set a while back, refreshing…";
+    }
+    recalc();
+    tryLiveRefresh();
+  });
+</script>
+
+</body>
+</html>
