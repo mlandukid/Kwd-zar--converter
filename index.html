@@ -125,7 +125,8 @@
     font-weight: 600;
     font-size: 13px;
     padding: 1px 4px;
-    max-width: 88px;
+    max-width: 78px;
+    white-space: nowrap;
   }
 
   .rate-strip #currencySelect option {
@@ -526,7 +527,10 @@
     for (var i = 0; i < codes.length; i++) {
       var opt = document.createElement("option");
       opt.value = codes[i];
-      opt.textContent = codes[i] + " — " + currencies[codes[i]].name;
+      // Keep the closed dropdown short (flag + code) so it doesn't get
+      // clipped by its width — the full name already shows in the label
+      // just below ("Price in Euro").
+      opt.textContent = currencies[codes[i]].flag + " " + codes[i];
       currencySelect.appendChild(opt);
     }
     currencySelect.value = selectedCode;
